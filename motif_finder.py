@@ -29,7 +29,6 @@ class MotifFinder:
 	def set_motif_length(self,lengthfile):
 		""" 
 		number of DNA sequences in the file sequences.fa 
-
 		"""
 		with open(lengthfile,'r') as f:
 			lines = f.readlines()
@@ -39,7 +38,6 @@ class MotifFinder:
 	def import_sequences(self,sequencesFile):
 		""" 
 		sequencesFile is the file name in results/dataset{i}
-
 		"""
 		with open(sequencesFile,'r') as f:
 			lines = f.readlines()
@@ -54,7 +52,6 @@ class MotifFinder:
 		Algorithm to find position weight matrix using all sequences in the file
 		output
 		:predictedmotif.txt
-
 		"""
 		pass
 
@@ -64,15 +61,13 @@ class MotifFinder:
 		uses predictedmotif to locate one site per sequence
 
 		output
-		:predictedsites.txt - (one number for each of numSequnces lines)
-	
+		:predictedsites.txt - (one number for each of numSequnces lines)	
 		"""
 		pass
 
 
 """
 Tester code
-
 """	
 
 # dest_folder = 'results/dataset' + str(0)

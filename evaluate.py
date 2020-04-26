@@ -8,12 +8,6 @@ from motif_finder import MotifFinder
 import matplotlib.pyplot as plt
 from shutil import copytree,copyfile # for testing
 
-try:
-	os.mkdir('results')
-except FileExistsError:
-	pass
-	#print('folder results: already exists')
-
 def import_motif(file):
 	"""
 	Used by function KL_divergence
@@ -69,23 +63,15 @@ def num_overlap_sites(data_i = 0):
 	return result
 
 
-def runtime(data_i = 0):
-	"""CPU runtime"""
-	start = time.process_time() # CPU time
-	## code
-	for i in range(10000):
-		pass
-	##code
-	end = time.process_time()
-	# print('CPU runtime: {0:.6f} sec'.format(end - start))
-
-	return round(end - start,6)
-
-
 """
 Testing
 
 Iterate over parameter. Average for i to i+9 for each parameter set
+
+Generating parameters set (length = 7) for iteration. 
+See benchmarks.py for order. 
+Each parameter_set has 10 datasets in that order
+
 """
 
 icpc = [1.0, 1.5, 2.0] # info_cont_per_col
@@ -97,10 +83,8 @@ default_ml = 7
 default_icpc = 1.5
 default_sc = 10
 
-
-""" Generating parameters set (length = 7) for iteration. See benchmarks.py for order. Each parameter_set has 10 datasets in that order """  
+# Populating parameters set
 params_set = [] 
-
 for i in icpc: # count = 3
 	params_set.append([i,default_ml,sl,default_sc]) 
 
@@ -116,6 +100,12 @@ result_kl_div = []
 result_overlap_pos = [] 
 result_overlap_sites = [] 
 result_runtime = []
+
+try:
+	os.mkdir('results')
+
+except FileExistsError:
+	print('folder results: already exists')
 
 for i,pset in enumerate(params_set):
 	kl_div = []
@@ -137,7 +127,7 @@ for i,pset in enumerate(params_set):
 			copyfile(dest_folder + '/motif.txt', dest_folder + '/predictedmotif.txt')
 		
 		except:
-			# print(sys.exc_info()[0])
+			# print('folder already exists',sys.exc_info()[0])
 			pass
 
 		"""
@@ -148,19 +138,24 @@ for i,pset in enumerate(params_set):
 		sol = MotifFinder()
 		sol.set_motif_length(dest_folder + '/motiflength.txt')
 		sol.import_sequences(dest_folder + '/sequences.fa')
+
+		start_time = time.process_time() # CPU time: run start
+
 		sol.predict_motif() # creates predictedmotif.txt
 		sol.predict_sites() # creates predictedsites.txt
 
-		
+		end_time = time.process_time() # CPU time: run end 
+
 		"""
 		
 		Calling evaluator functions
 
 		"""
+
 		kl_div.append(KL_divergence(filenum))
 		overlap_pos.append(num_overlap_pos(filenum))
 		overlap_sites.append(num_overlap_sites(filenum))
-		runtimes.append(runtime(filenum))
+		runtimes.append(round(end_time - start_time,8))
 
 	result_kl_div.append(np.mean(kl_div))
 	result_overlap_pos.append(np.mean(overlap_pos)) 
@@ -168,18 +163,21 @@ for i,pset in enumerate(params_set):
 	result_runtime.append(np.mean(runtimes))
 
 
-print(result_kl_div) 
-print(result_overlap_pos) 
-print(result_overlap_sites)
-print(result_runtime)
+print("KL_Divergence:",result_kl_div) 
+print("Overlapping Postions",result_overlap_pos) 
+print("Overlapping Sites:",result_overlap_sites)
+print("Runtimes",result_runtime)
 
 try:
 	os.mkdir('performance_plots')
 
 except FileExistsError:
-	pass
-	#print('folder performace_plots: already exists')
+	print('folder performace_plots: already exists')
 
+"""	
+Plotting Results
+
+"""
 
 def plotter(X,Y, y_lab = None):
 	plt.plot(np.arange(len(params_set)), Y)
@@ -187,6 +185,7 @@ def plotter(X,Y, y_lab = None):
 	plt.xlabel('Parameter Set')
 	plt.ylabel(y_lab)
 	plt.ticklabel_format(axis = 'y',style = 'sci')
+
 	for i, txt in enumerate(X):
 		plt.annotate(tuple(txt), (i, Y[i]))
 
