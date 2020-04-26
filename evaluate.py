@@ -1,84 +1,85 @@
 import os
+import sys
 from math import log
 import numpy as np
 from scipy.special import rel_entr
 import time
-import motif_finder
+from motif_finder import MotifFinder
 import matplotlib.pyplot as plt
 from shutil import copytree,copyfile # for testing
 
 try:
-    os.mkdir('results')
+	os.mkdir('results')
 except FileExistsError:
-    pass
-    #print('folder results: already exists')
+	pass
+	#print('folder results: already exists')
 
 def import_motif(file):
-    """
-    Used by function KL_divergence
-        :file = complete file location + motif file name
-    """
-    with open(file,'r') as f:
-        lines = f.readlines()
-    motif = []
-    for line in lines[1:-1]:
-        motif.append(list(map(float,line.strip().split())))
-    return motif
-    
+	"""
+	Used by function KL_divergence
+		:file = complete file location + motif file name
+	"""
+	with open(file,'r') as f:
+		lines = f.readlines()
+	motif = []
+	for line in lines[1:-1]:
+		motif.append(list(map(float,line.strip().split())))
+	return motif
+	
 
 def KL_divergence(data_i = 0):
-    """
-    Relative Entropy b/w
-    
-    P: True distribution = “motif.txt”
-        and
-    Q: Model Predicted/Approximate distribution = “predictedmotif.txt”
-    
-    Output:
-        : D_KL(P||Q)
-    """
-    motif = import_motif('results/dataset' + str(data_i) + '/motif.txt') # list of lists
-    predictedmotif = import_motif('results/dataset' + str(data_i) + '/predictedmotif.txt')
-    
-    rel_ent = 0
-    
-    for i in range(len(motif[1:-1])):
-        # compare each row (ACGT) against each other in two matrices
-        # row_diff = sum((motif[i][j] * log(motif[i][j]/predictedmotif[i][j])  for j in range(len(motif[i]))))
-        row_diff = rel_entr(motif[i],predictedmotif[i])
-        rel_ent += row_diff
-    return rel_ent
+	"""
+	Relative Entropy b/w
+	
+	P: True distribution = “motif.txt”
+		and
+	Q: Model Predicted/Approximate distribution = “predictedmotif.txt”
+	
+	Output:
+		: D_KL(P||Q)
+	"""
+	motif = import_motif('results/dataset' + str(data_i) + '/motif.txt') # list of lists
+	predictedmotif = import_motif('results/dataset' + str(data_i) + '/predictedmotif.txt')
+	
+	rel_ent = 0
+	
+	for i in range(len(motif[1:-1])):
+		# compare each row (ACGT) against each other in two matrices
+		# row_diff = sum((motif[i][j] * log(motif[i][j]/predictedmotif[i][j])  for j in range(len(motif[i]))))
+		row_diff = rel_entr(motif[i],predictedmotif[i])
+		rel_ent += row_diff
+	return rel_ent
 
 def num_overlap_pos(data_i = 0):
-    """
-    Number of overlapping positions between “sites.txt” and “predictedsites.txt”
-    """
-    result = 0
-    return result
+	"""
+	Number of overlapping positions between “sites.txt” and “predictedsites.txt”
+	"""
+	result = 0
+	return result
 
 
 def num_overlap_sites(data_i = 0):
-    """
-    Number of overlapping sites (two sites overlap if at least ML/2 of their positions are common) between “sites.txt” and “predictedsites.txt
-    ”"""
-    sites = import_motif('results/dataset' + str(data_i) + '/sites.txt')
-    predictedsites = import_motif('results/dataset' + str(data_i) + '/predictedsites.txt')
+	"""
+	Number of overlapping sites (two sites overlap if at least ML/2 of their positions are common) between “sites.txt” and “predictedsites.txt
+	”"""
+	sites = import_motif('results/dataset' + str(data_i) + '/sites.txt')
+	predictedsites = import_motif('results/dataset' + str(data_i) + '/predictedsites.txt')
 
-    result = 0
-    return result
+	result = 0
+	return result
 
 
 def runtime(data_i = 0):
-    """CPU runtime"""
-    start = time.process_time() # CPU time
-    ## code
-    for i in range(10000):
-        pass
-    ##code
-    end = time.process_time()
-    # print('CPU runtime: {0:.6f} sec'.format(end - start))
+	"""CPU runtime"""
+	start = time.process_time() # CPU time
+	## code
+	for i in range(10000):
+		pass
+	##code
+	end = time.process_time()
+	# print('CPU runtime: {0:.6f} sec'.format(end - start))
 
-    return round(end - start,6)
+	return round(end - start,6)
 
 
 """
@@ -121,17 +122,41 @@ for i,pset in enumerate(params_set):
 	overlap_pos = [] 
 	overlap_sites = [] 
 	runtimes = []
-	for j in range(10):
+
+	for j in range(10): 
+	# number of repetitions to get a statistical average
 		filenum = i*10+j
 		
 		try:
-			copytree('benchmarks/dataset'+ str(data_i),'results/dataset' + str(data_i))
-			## ***** copy for testing. change it after implementing motif_finder.txt *****
-			copyfile('results/dataset' + str(data_i) + '/sites.txt',  'results/dataset' + str(data_i) + '/predictedsites.txt')
-			copyfile('results/dataset' + str(data_i) + '/motif.txt',  'results/dataset' + str(data_i) + '/predictedmotif.txt')
+			src_folder = 'benchmarks/dataset' + str(filenum)
+			dest_folder = 'results/dataset' + str(filenum)
+			copytree(src_folder,dest_folder)
+
+			## ***** copy for testing. change it after implementing motif_finder.py *****
+			copyfile(dest_folder + '/sites.txt', dest_folder + '/predictedsites.txt')
+			copyfile(dest_folder + '/motif.txt', dest_folder + '/predictedmotif.txt')
+		
 		except:
+			# print(sys.exc_info()[0])
 			pass
 
+		"""
+
+		Calling main algorithm
+
+		"""
+		sol = MotifFinder()
+		sol.set_motif_length(dest_folder + '/motiflength.txt')
+		sol.import_sequences(dest_folder + '/sequences.fa')
+		sol.predict_motif() # creates predictedmotif.txt
+		sol.predict_sites() # creates predictedsites.txt
+
+		
+		"""
+		
+		Calling evaluator functions
+
+		"""
 		kl_div.append(KL_divergence(filenum))
 		overlap_pos.append(num_overlap_pos(filenum))
 		overlap_sites.append(num_overlap_sites(filenum))
@@ -152,8 +177,8 @@ try:
 	os.mkdir('performance_plots')
 
 except FileExistsError:
-    pass
-    #print('folder results: already exists')
+	pass
+	#print('folder performace_plots: already exists')
 
 
 def plotter(X,Y, y_lab = None):
@@ -163,8 +188,7 @@ def plotter(X,Y, y_lab = None):
 	plt.ylabel(y_lab)
 	plt.ticklabel_format(axis = 'y',style = 'sci')
 	for i, txt in enumerate(X):
-	    plt.annotate(tuple(txt), (i, Y[i]))
-	    # plt.annotate(i, (i, Y[i]))
+		plt.annotate(tuple(txt), (i, Y[i]))
 
 	plt.savefig('performance_plots/'+ y_lab +'.png', dpi = 150)
 	plt.close()
