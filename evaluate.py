@@ -47,21 +47,50 @@ def KL_divergence(data_i = 0):
 def num_overlap_pos(data_i = 0):
 	"""
 	Number of overlapping positions between “sites.txt” and “predictedsites.txt”
+
 	"""
+	with open('results/dataset' + str(data_i) + '/sites.txt','r') as f:
+		sites = list(map(int,f.readlines()))
+
+	with open('results/dataset' + str(data_i) + '/predictedsites.txt','r') as f:
+		predictedsites = list(map(int,f.readlines()))
+	
+	with open('results/dataset' + str(data_i) + '/motiflength.txt','r') as f:
+		motif_length = int(f.readlines()[0])
+
 	result = 0
+
+	for i in range(len(sites)):
+		gap = np.absolute(sites[i]-predictedsites[i])
+		if gap <= motif_length:
+			result += motif_length - gap
+
 	return result
 
 
 def num_overlap_sites(data_i = 0):
 	"""
 	Number of overlapping sites (two sites overlap if at least ML/2 of their positions are common) between “sites.txt” and “predictedsites.txt
+	
 	”"""
-	sites = import_motif('results/dataset' + str(data_i) + '/sites.txt')
-	predictedsites = import_motif('results/dataset' + str(data_i) + '/predictedsites.txt')
+	
+	with open('results/dataset' + str(data_i) + '/sites.txt','r') as f:
+		sites = list(map(int,f.readlines()))
+
+	with open('results/dataset' + str(data_i) + '/predictedsites.txt','r') as f:
+		predictedsites = list(map(int,f.readlines()))
+	
+	with open('results/dataset' + str(data_i) + '/motiflength.txt','r') as f:
+		motif_length = int(f.readlines()[0])
 
 	result = 0
-	return result
 
+	for i in range(len(sites)):
+		gap = np.absolute(sites[i]-predictedsites[i])
+		if gap <= motif_length//2:
+			result +=1
+
+	return result
 
 """
 Testing
@@ -94,6 +123,13 @@ for i in [6,8]: # count = 2
 for i in [5,20]: # count = 2
 	params_set.append([default_icpc,default_ml,sl,i]) 
 
+# make a file with all the parameters
+with open('results/' + 'params_set.txt','w') as f:
+	f.write("ICPC, ML, SL, SC\n")
+	for i,l in enumerate(params_set):
+		f.write("{0} :".format(l))
+		f.write("Datasets {0}".format([10*i+j for j in range(10)]))
+		f.write("\n")
 
 ## Result arrays. Length = 7
 result_kl_div = [] 
