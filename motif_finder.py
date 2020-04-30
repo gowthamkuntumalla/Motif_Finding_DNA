@@ -70,15 +70,15 @@ class MotifFinder:
 Tester code
 """	
 
-# dest_folder = 'results/dataset' + str(0)
+dest_folder = 'results/dataset' + str(0)
 
-# sol = MotifFinder()
-# sol.set_motif_length(dest_folder + '/motiflength.txt')
-# sol.import_sequences(dest_folder + '/sequences.fa')
-# sol.predict_motif() # creates predictedmotif.txt
-# sol.predict_sites() # creates predictedsites.txt
+sol = MotifFinder()
+sol.set_motif_length(dest_folder + '/motiflength.txt')
+sol.import_sequences(dest_folder + '/sequences.fa')
+sol.predict_motif() # creates predictedmotif.txt
+sol.predict_sites() # creates predictedsites.txt
 
-# print(sol.motifLen)
-# print(sol.sequenceList)
+print(sol.motifLen)
+print(sol.sequenceList)
 		
 		 
