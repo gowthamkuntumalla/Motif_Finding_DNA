@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 from math import log
@@ -103,6 +105,13 @@ Each parameter_set has 10 datasets in that order
 
 """
 
+try:
+	os.mkdir('results')
+
+except FileExistsError:
+	# print('folder results: already exists')
+	pass
+
 icpc = [1.0, 1.5, 2.0] # info_cont_per_col
 ml = [6, 7, 8] # motif_length
 sl = 500 # sequence_length
@@ -137,12 +146,6 @@ result_overlap_pos = []
 result_overlap_sites = [] 
 result_runtime = []
 
-try:
-	os.mkdir('results')
-
-except FileExistsError:
-	print('folder results: already exists')
-
 for i,pset in enumerate(params_set):
 	kl_div = []
 	overlap_pos = [] 
@@ -159,8 +162,8 @@ for i,pset in enumerate(params_set):
 			copytree(src_folder,dest_folder)
 
 			## ***** copy for testing. change it after implementing motif_finder.py *****
-			copyfile(dest_folder + '/sites.txt', dest_folder + '/predictedsites.txt')
-			copyfile(dest_folder + '/motif.txt', dest_folder + '/predictedmotif.txt')
+			# copyfile(dest_folder + '/sites.txt', dest_folder + '/predictedsites.txt')
+			# copyfile(dest_folder + '/motif.txt', dest_folder + '/predictedmotif.txt')
 		
 		except:
 			# print('folder already exists',sys.exc_info()[0])
@@ -177,10 +180,27 @@ for i,pset in enumerate(params_set):
 
 		start_time = time.process_time() # CPU time: run start
 
-		sol.predict_motif() # creates predictedmotif.txt
-		sol.predict_sites() # creates predictedsites.txt
+		pred_sites, pred_motif =  sol.optimize_predict() ## Main Algorithm
 
 		end_time = time.process_time() # CPU time: run end 
+
+		"""
+
+		Creating files predictedmotif.txt and predictedsites.txt
+
+		"""
+
+		with open('results/dataset' + str(filenum) + '/predictedsites.txt', 'w') as f:
+			for pos in pred_sites:
+				f.write("{0}\n".format(pos))
+
+		with open('results/dataset' + str(filenum) + '/predictedmotif.txt', 'w') as f:
+			f.write('>MOTIF{}	{}\n'.format(str(filenum), str(sol.motifLen)))
+
+			for col in pred_motif:
+				col_str = ' '.join([str(entry) for entry in col])
+				f.write(col_str + '\n')
+			f.write('<')
 
 		"""
 		
@@ -192,11 +212,13 @@ for i,pset in enumerate(params_set):
 		overlap_pos.append(num_overlap_pos(filenum))
 		overlap_sites.append(num_overlap_sites(filenum))
 		runtimes.append(round(end_time - start_time,8))
+		print("Algorithm finished running dataset {0}".format(filenum))
 
 	result_kl_div.append(np.mean(kl_div))
 	result_overlap_pos.append(np.mean(overlap_pos)) 
 	result_overlap_sites.append(np.mean(overlap_sites))
 	result_runtime.append(np.mean(runtimes))
+	
 
 
 print("KL_Divergence:",result_kl_div) 
@@ -233,3 +255,4 @@ plotter(params_set, result_overlap_pos, y_lab = 'Overlapping Positions')
 plotter(params_set, result_overlap_sites, y_lab = 'Overlapping Sites')
 plotter(params_set, result_runtime, y_lab = 'Runtime')
 
+copyfile('results/params_set.txt', 'performance_plots/params_set.txt')

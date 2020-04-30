@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """ 
 Step1: Benchmarking 
 
@@ -92,7 +94,10 @@ def plant_in_string(ml, motifstr, sample):
     return sample, site
 
 
-os.mkdir('benchmarks')
+try:
+	os.mkdir('benchmarks')
+except:
+	print("folder already exists")
 
 
 def write_dataset_to_file(dataset_ctr, samples, pwm, sites, motif_len):
