@@ -250,9 +250,9 @@ class MotifFinder:
 		return pred_sites, pred_motif
 
 
-"""
-Tester code
-"""	
+# """
+# Tester code
+# """	
 
 # dest_folder = 'results/dataset' + str(0)
 
