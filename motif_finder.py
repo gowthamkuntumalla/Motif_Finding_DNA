@@ -159,17 +159,17 @@ class MotifFinder:
 		# 2 Mixture Models
 		overlappingSeq = [] # length = (seqLen - ML) * N
 		for seq in self.sequenceList: # Motif class 
-			for i in range(len(seq) - self.motifLen):
+			for i in range(len(seq) - (self.motifLen - 1)):
 				overlappingSeq.append(seq[i:i+self.motifLen]) 
 		n = len(overlappingSeq)	
 			
-		theta0 = avg_freq.copy() # Background class; ex: [0.25,0.25,0.25,0.25] 
-		theta1 = [[0]*self.lenAlphabet for l in range(self.motifLen)]		
+		theta0 = avg_freq.copy() # Background class; ex: [0.25,0.25,0.25,0.25] ; theta2 in paper1994
+		theta1 = [[0]*self.lenAlphabet for l in range(self.motifLen)]		#theta1 in paper1994
 		
 		for seq in overlappingSeq:
 			for i,c in enumerate(seq):
 				theta1[i][self.alphabet[c]] +=1
-		theta1 = [[ i/np.sum(pos) for i in pos] for pos in theta1] # Motif class ;similar to theta0. 
+		theta1 = [[ i/np.sum(pos) for i in pos] for pos in theta1] # Motif class ;similar to theta1.
 
 		# print(theta0)
 		# print(theta1)
@@ -179,7 +179,7 @@ class MotifFinder:
 		prior_background = 0.5#;pass
 
 		# Assignments
-		z_array = [[0]*(len(self.sequenceList[i])) \
+		z_array = [[0]*(len(self.sequenceList[i]) - (self.motifLen - 1)) \
 						for i in range(self.n_seq)] # Bayesian posterior; value = probability that sequence belongs to motif class. Ex: shape = 10x500
 		
 		# Erasing Factors
@@ -254,16 +254,18 @@ class MotifFinder:
 # Tester code
 # """	
 
-# dest_folder = 'results/dataset' + str(0)
+dest_folder = 'results/dataset' + str(0)
 
-# sol = MotifFinder()
-# sol.set_motif_length(dest_folder + '/motiflength.txt')
-# sol.import_sequences(dest_folder + '/sequences.fa')
-# sol.optimize_predict()
+sol = MotifFinder()
+sol.set_motif_length(dest_folder + '/motiflength.txt')
+sol.import_sequences(dest_folder + '/sequences.fa')
+sites, motif = sol.optimize_predict()
 
-# print(sol.motifLen)
-# print(sol.sequenceList)
-# print(sol.n_seq)
-# print(sol.seqLen)
+print(sol.motifLen)
+print(sol.sequenceList)
+print(sol.n_seq)
+print(sol.seqLen)
+print(sites)
+print(motif)
 
 		 
