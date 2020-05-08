@@ -162,7 +162,32 @@ class MotifFinder:
 			for i in range(len(seq) - (self.motifLen - 1)):
 				overlappingSeq.append(seq[i:i+self.motifLen]) 
 		n = len(overlappingSeq)	
+		from collections import Counter
+		subseqctr = Counter()
+		motif_site = []
+		for o in range(len(overlappingSeq)):
+			subseqctr[overlappingSeq[o]] += 1
+			if overlappingSeq[o] == 'AGGATTA':
+				motif_site.append(o % 494)
+		top_m = subseqctr.most_common(5)
+		dist_dict = Counter()
+		for i in top_m:
+			for j in top_m:
+				if j[0] != i[0]:
+					k = (i[0],j[0])
+					for a,b in zip(i[0], j[0]):
+						if a == b:
+							dist_dict[k] += 1
+		print(dist_dict)
+		init_p = np.zeros(shape=(4, self.motifLen)) + 0.17
+		for l in overlappingSeq:
+			init_p = np.zeros(shape=(self.motifLen, 4)) + 0.17
+
+			for j in range(self.motifLen):
+				character = self.alphabet[l[j]]
+				init_p[j][character] = 0.5
 			
+
 		theta0 = avg_freq.copy() # Background class; ex: [0.25,0.25,0.25,0.25] ; theta2 in paper1994
 		theta1 = [[0]*self.lenAlphabet for l in range(self.motifLen)]		#theta1 in paper1994
 		
@@ -175,8 +200,8 @@ class MotifFinder:
 		# print(theta1)
 		# Priors = [Lambda1 (motif class), lambda2 (background class)]; sum = 1
 		
-		prior_motif = 0.5#;pass
-		prior_background = 0.5#;pass
+		prior_motif = 2e-3#;pass
+		prior_background = 1-prior_motif#;pass
 
 		# Assignments
 		z_array = [[0]*(len(self.sequenceList[i]) - (self.motifLen - 1)) \
