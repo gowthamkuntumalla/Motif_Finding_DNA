@@ -186,7 +186,7 @@ class MotifFinder:
 			for j in range(self.motifLen):
 				character = self.alphabet[l[j]]
 				init_p[j][character] = 0.5
-			
+
 
 		theta0 = avg_freq.copy() # Background class; ex: [0.25,0.25,0.25,0.25] ; theta2 in paper1994
 		theta1 = [[0]*self.lenAlphabet for l in range(self.motifLen)]		#theta1 in paper1994
