@@ -10,6 +10,8 @@ from d_motif_finder import MotifFinder
 import matplotlib.pyplot as plt
 from shutil import copytree,copyfile # for testing
 
+fileprefix = 'dev100iter'
+
 def import_motif(file):
 	"""
 	Used by function KL_divergence
@@ -34,8 +36,8 @@ def KL_divergence(data_i = 0):
 	Output:
 		: D_KL(P||Q)
 	"""
-	motif = import_motif('dev2results/dataset' + str(data_i) + '/motif.txt') # list of lists
-	predictedmotif = import_motif('dev2results/dataset' + str(data_i) + '/predictedmotif.txt')
+	motif = import_motif('' + fileprefix + 'results/dataset' + str(data_i) + '/motif.txt') # list of lists
+	predictedmotif = import_motif('' + fileprefix + 'results/dataset' + str(data_i) + '/predictedmotif.txt')
 	
 	rel_ent = 0
 	
@@ -51,13 +53,13 @@ def num_overlap_pos(data_i = 0):
 	Number of overlapping positions between “sites.txt” and “predictedsites.txt”
 
 	"""
-	with open('dev2results/dataset' + str(data_i) + '/sites.txt','r') as f:
+	with open('' + fileprefix + 'results/dataset' + str(data_i) + '/sites.txt','r') as f:
 		sites = list(map(int,f.readlines()))
 
-	with open('dev2results/dataset' + str(data_i) + '/predictedsites.txt','r') as f:
+	with open('' + fileprefix + 'results/dataset' + str(data_i) + '/predictedsites.txt','r') as f:
 		predictedsites = list(map(int,f.readlines()))
 	
-	with open('dev2results/dataset' + str(data_i) + '/motiflength.txt','r') as f:
+	with open('' + fileprefix + 'results/dataset' + str(data_i) + '/motiflength.txt','r') as f:
 		motif_length = int(f.readlines()[0])
 
 	result = 0
@@ -76,13 +78,13 @@ def num_overlap_sites(data_i = 0):
 	
 	”"""
 	
-	with open('dev2results/dataset' + str(data_i) + '/sites.txt','r') as f:
+	with open('' + fileprefix + 'results/dataset' + str(data_i) + '/sites.txt','r') as f:
 		sites = list(map(int,f.readlines()))
 
-	with open('dev2results/dataset' + str(data_i) + '/predictedsites.txt','r') as f:
+	with open('' + fileprefix + 'results/dataset' + str(data_i) + '/predictedsites.txt','r') as f:
 		predictedsites = list(map(int,f.readlines()))
 	
-	with open('dev2results/dataset' + str(data_i) + '/motiflength.txt','r') as f:
+	with open('' + fileprefix + 'results/dataset' + str(data_i) + '/motiflength.txt','r') as f:
 		motif_length = int(f.readlines()[0])
 
 	result = 0
@@ -106,7 +108,7 @@ Each parameter_set has 10 datasets in that order
 """
 
 try:
-	os.mkdir('dev2results')
+	os.mkdir('' + fileprefix + 'results')
 
 except FileExistsError:
 	# print('folder results: already exists')
@@ -133,7 +135,7 @@ for i in [5,20]: # count = 2
 	params_set.append([default_icpc,default_ml,sl,i]) 
 
 # make a file with all the parameters
-with open('dev2results/' + 'params_set.txt','w') as f:
+with open('' + fileprefix + 'results/' + 'params_set.txt','w') as f:
 	f.write("ICPC, ML, SL, SC\n")
 	for i,l in enumerate(params_set):
 		f.write("{0} :".format(l))
@@ -160,7 +162,7 @@ for i,pset in enumerate(params_set):
 		
 		try:
 			src_folder = 'benchmarks/dataset' + str(filenum)
-			dest_folder = 'dev2results/dataset' + str(filenum)
+			dest_folder = '' + fileprefix + 'results/dataset' + str(filenum)
 			copytree(src_folder,dest_folder)
 
 			## ***** copy for testing. change it after implementing motif_finder.py *****
@@ -192,11 +194,11 @@ for i,pset in enumerate(params_set):
 
 		"""
 
-		with open('dev2results/dataset' + str(filenum) + '/predictedsites.txt', 'w') as f:
+		with open('' + fileprefix + 'results/dataset' + str(filenum) + '/predictedsites.txt', 'w') as f:
 			for pos in pred_sites:
 				f.write("{0}\n".format(pos))
 
-		with open('dev2results/dataset' + str(filenum) + '/predictedmotif.txt', 'w') as f:
+		with open('' + fileprefix + 'results/dataset' + str(filenum) + '/predictedmotif.txt', 'w') as f:
 			f.write('>MOTIF{}	{}\n'.format(str(filenum), str(sol.motifLen)))
 
 			for col in pred_motif:
@@ -229,7 +231,7 @@ print("Overlapping Sites:",result_overlap_sites)
 print("Runtimes",result_runtime)
 
 try:
-	os.mkdir('dev2performance_plots')
+	os.mkdir('' + fileprefix + 'performance_plots')
 
 except FileExistsError:
 	print('folder performace_plots: already exists')
@@ -249,7 +251,7 @@ def plotter(X,Y, y_lab = None):
 	for i, txt in enumerate(X):
 		plt.annotate(tuple(txt), (i, Y[i]))
 
-	plt.savefig('dev2performance_plots/'+ y_lab +'.png', dpi = 150)
+	plt.savefig('' + fileprefix + 'performance_plots/' + y_lab +'.png', dpi = 150)
 	plt.close()
 
 plotter(params_set, result_kl_div, y_lab = 'Relative Entropy')
@@ -257,4 +259,4 @@ plotter(params_set, result_overlap_pos, y_lab = 'Overlapping Positions')
 plotter(params_set, result_overlap_sites, y_lab = 'Overlapping Sites')
 plotter(params_set, result_runtime, y_lab = 'Runtime')
 
-copyfile('dev2results/params_set.txt', 'dev2performance_plots/params_set.txt')
+copyfile('' + fileprefix + 'results/params_set.txt', '' + fileprefix + 'performance_plots/params_set.txt')

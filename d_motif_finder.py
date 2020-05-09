@@ -20,6 +20,7 @@ import os
 import numpy as np
 from functools import reduce
 import operator
+from collections import Counter
 
 
 class MotifFinder:
@@ -111,7 +112,7 @@ class MotifFinder:
         z_matrix = z_matrix / z_matrix.sum(axis=1, keepdims=1)
         return z_matrix
 
-    def optimize_predict(self, n_iter=10, beta=0.01):
+    def optimize_predict(self, n_iter=100, beta=0.01):
         """
         Expectation Maximization Algorithm to find position weight matrix using all sequences in the file
 
@@ -175,7 +176,7 @@ class MotifFinder:
         The motif will Probably be in multiple Sequences. 
         Description of how to initialize is in Bailey Elkin 1995
         """
-        from collections import Counter
+
         subseqctr = Counter()
         for o in range(len(overlappingSeq)):
             subseqctr[overlappingSeq[o]] += 1
@@ -184,6 +185,7 @@ class MotifFinder:
         max_likely = 0
         best_pwm = np.zeros(shape=(self.motifLen, 4)) + 0.17
         best_motif = None
+        best_z_array = None
         for candidate_motif in top_m:
             candidate_start = np.zeros(shape=(self.motifLen, 4)) + 0.17
 
@@ -197,6 +199,7 @@ class MotifFinder:
                 max_likely = max_likelihood
                 best_pwm = candidate_start
                 best_motif = candidate_motif
+                best_z_array = cand_z_array
 
         """
         Alternatively, loop through all subsequences. 
@@ -217,7 +220,7 @@ class MotifFinder:
         #         best_motif = candidate_motif
         #     print('hi')
 
-        theta0 = avg_freq.copy()  # Background class; ex: [0.25,0.25,0.25,0.25] ; theta2 in paper1994
+        # theta0 = avg_freq.copy()  # Background class; ex: [0.25,0.25,0.25,0.25] ; theta2 in paper1994
         '''
         Copy over the "estimated" best Motif Matrix from above to theta. 
         
@@ -236,11 +239,10 @@ class MotifFinder:
         prior_background = 1 - prior_motif  # ;pass
 
         # Assignments
-        z_array = self.calculate_z_table(best_pwm,
-                                         overlappingSeq)  # Bayesian posterior; value = probability that sequence belongs to motif class. Ex: shape = 10x500
+        z_array = best_z_array  # Bayesian posterior; value = probability that sequence belongs to motif class. Ex: shape = 10x500
 
         # Erasing Factors
-        e_array = [[1] * (len(self.sequenceList[i])) for i in range(self.n_seq)]
+        # e_array = [[1] * (len(self.sequenceList[i])) for i in range(self.n_seq)]
 
         """Note: Z, z are same and E, e are same just expresseds in 2D,1D vectors respectively"""
 
@@ -254,11 +256,6 @@ class MotifFinder:
             Using the simplified E step formula from 1995 Appendix. Thus, lambdas not being used
             Is this a possible improvement?
             '''
-            z_array = self.calculate_z_table(theta1, overlappingSeq)  # eq4
-            curr_pos_guess = [0] * self.n_seq
-            #############    Not Using - For Testing Only  ##################
-            for i in range(self.n_seq):
-                curr_pos_guess[i] = np.where(z_array[i] == np.max(z_array[i]))[0][0]
 
             # normalizing z_array such that over each sequence i = 1 .. n  sum(z_i) <= 1. Probability axioms
             ### Not using  ####
@@ -271,10 +268,10 @@ class MotifFinder:
             Not using right now,
             Update erasing factors - Do we need this? Seems to be for multiple Motifs.
             '''
-            for i in range(self.n_seq):
-                for j in range(len(self.sequenceList[i]) - self.motifLen):
-                    e_array[i][j] *= reduce(operator.mul,
-                                            [1 - z_array[i][k] for k in range(j - self.motifLen + 1, j + 1)], 1)
+            # for i in range(self.n_seq):
+            #     for j in range(len(self.sequenceList[i]) - self.motifLen):
+            #         e_array[i][j] *= reduce(operator.mul,
+            #                                 [1 - z_array[i][k] for k in range(j - self.motifLen + 1, j + 1)], 1)
 
             ## Maximization step - (eq 5 & 13)
             # priors
@@ -291,11 +288,11 @@ class MotifFinder:
                 Not sure if we need to update the background formula, we know (i think?) that this is drawn
                 from a random distribution
                 '''
-                for i in range(self.n_seq):
-                    for j in range(len(self.sequenceList[i]) - self.motifLen):
-                        for l in range(self.motifLen):
-                            c_back_arr[k] += (1 - z_array[i][j]) * self._indicator(k,
-                                                                                   overlappingSeq[10 * i + j][l])  # eq9
+                # for i in range(self.n_seq):
+                #     for j in range(len(self.sequenceList[i]) - self.motifLen):
+                #         for l in range(self.motifLen):
+                #             c_back_arr[k] += (1 - z_array[i][j]) * self._indicator(k,
+                #                                                                    overlappingSeq[10 * i + j][l])  # eq9
 
                 for l in range(self.motifLen):
                     for i in range(self.n_seq):
@@ -317,6 +314,8 @@ class MotifFinder:
                 for j in range(self.lenAlphabet):
                     theta1[i][j] = (c_motif_arr[i][j] + beta_arr[j]) / (np.sum(c_motif_arr[i]) + beta)
 
+            z_array = self.calculate_z_table(theta1, overlappingSeq)   #eq4
+
             n_iter -= 1
 
         # print(theta0)
@@ -326,13 +325,14 @@ class MotifFinder:
         ## Found Motif and predicted Sites
         pred_sites = [0] * self.n_seq
         test = self.calculate_z_table(best_pwm, overlappingSeq)
-        print(best_pwm)
+
         for i in range(self.n_seq):
             pred_sites[i] = np.where(z_array[i] == np.max(z_array[i]))[0][0]
         print(pred_sites)
-        for i in range(self.n_seq):
-            pred_sites[i] = np.where(test[i] == np.max(test[i]))[0][0] # Is there change from the original guess?
+        # for i in range(self.n_seq):
+        #     pred_sites[i] = np.where(test[i] == np.max(test[i]))[0][0] # Is there change from the original guess?
         pred_motif = theta1
+        print(pred_motif)
         #############################################################################################
         ## return values
         return pred_sites, pred_motif
