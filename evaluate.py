@@ -10,7 +10,7 @@ from d_motif_finder import MotifFinder
 import matplotlib.pyplot as plt
 from shutil import copytree,copyfile # for testing
 
-fileprefix = 'dev100iter'
+fileprefix = 'gk100iter'
 
 def import_motif(file):
 	"""
@@ -251,7 +251,7 @@ def plotter(X,Y, y_lab = None):
 	for i, txt in enumerate(X):
 		plt.annotate(tuple(txt), (i, Y[i]))
 
-	plt.savefig('' + fileprefix + 'performance_plots/' + y_lab +'.png', dpi = 150)
+	plt.savefig('' + fileprefix + 'performance_plots/' + y_lab +'.png', dpi = 300)
 	plt.close()
 
 plotter(params_set, result_kl_div, y_lab = 'Relative Entropy')
