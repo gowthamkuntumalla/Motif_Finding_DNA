@@ -1,0 +1,3 @@
+beta = 0.01 is default. All other values of n_iter runs have used this beta.
+
+a run with n_iter = 100 and beta = 0.001 is written with prefix =  'gk100iterb001'

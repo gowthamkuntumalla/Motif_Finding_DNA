@@ -112,7 +112,7 @@ class MotifFinder:
         z_matrix = z_matrix / z_matrix.sum(axis=1, keepdims=1)
         return z_matrix
 
-    def optimize_predict(self, n_iter=100, beta=0.01):
+    def optimize_predict(self, n_iter=100, beta=0.05):
         """
         Expectation Maximization Algorithm to find position weight matrix using all sequences in the file
 

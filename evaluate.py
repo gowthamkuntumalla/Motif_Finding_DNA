@@ -10,7 +10,7 @@ from d_motif_finder import MotifFinder
 import matplotlib.pyplot as plt
 from shutil import copytree,copyfile # for testing
 
-fileprefix = 'gk100iter'
+fileprefix = 'gk100iterb005'
 
 def import_motif(file):
 	"""
